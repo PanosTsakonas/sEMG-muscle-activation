@@ -2,10 +2,11 @@ clc;
 close all;
 clear all;
 
+%Set your own sampling frequency
 fsEMG=1000;
 fn=fsEMG/2;
 
-file=getenv('USERPROFILE')+"\OneDrive - University of Warwick\PhD\Hand Trials\Results\Cylindrical Grasp\sEMG Data\";
+file=getenv('USERPROFILE')+"Set file path location of sEMG data";
 
 %Set 1 for zero initial condition in the ODE solver or to [] for non zero
 Zero=1;
@@ -13,18 +14,27 @@ Zero=1;
 if isempty(Zero)==0
 
     ff=file+"Plots\Activation_zero_init\";
+   
     ffr=file+"Plots\Ratio_zero_init\";
+    
 else
     ff=file+"Plots\Activation_nonzero_init\";
     ffr=file+"Plots\Ratio_nonzero_init\";
 end
 
+%This checks whether the folders exsit that will have all the plots
+File_Create(ff);
+File_Create(ffr);
+
+ff_Sig=file+"Plots\Signal\";
+File_Create(ff_Sig);
 
 %Set to a number to allow the HHT plot of sEMGs
 HHT_View=1;
 
 if isempty(HHT_View)==0
     ff_HHT=file+"Plots\HHT\";
+    File_Create(ff_HHT);
 end
 
 %Set the filter
@@ -148,7 +158,7 @@ for i=1:10
         legend("Existing pipeline","New pipeline","EMG signal");
         xlabel("Time (s)");
         ylabel("Normalised EMG signal");
-        saveas(gcf,file+"Plots\Signal\EDC_Signal_Par_"+i+"_Cyl_"+j+".png");
+        saveas(gcf,ff_Sig+"EDC_Signal_Par_"+i+"_Cyl_"+j+".png");
 
         figure()
         plot(t,smooth_FDS,t,ppval(FDS_env,t),'--','LineWidth',1)
@@ -159,7 +169,7 @@ for i=1:10
         legend("Existing pipeline","New pipeline","EMG signal");
         xlabel("Time (s)");
         ylabel("Normalised EMG signal");
-        saveas(gcf,file+"Plots\Signal\FDS_Signal_Par_"+i+"_Cyl_"+j+".png");
+        saveas(gcf,ff_Sig+"FDS_Signal_Par_"+i+"_Cyl_"+j+".png");
 
         figure()
         plot(t,smooth_FDP,t,ppval(FDP_env,t),'--','LineWidth',1)
@@ -170,7 +180,7 @@ for i=1:10
         legend("Existing pipeline","New pipeline","EMG signal");
         xlabel("Time (s)");
         ylabel("Normalised EMG signal");
-        saveas(gcf,file+"Plots\Signal\FDP_Signal_Par_"+i+"_Cyl_"+j+".png");
+        saveas(gcf,ff_Sig+"FDP_Signal_Par_"+i+"_Cyl_"+j+".png");
 
         figure()
         plot(t,smooth_EDC,t,a_edc_ode_env)
@@ -241,5 +251,13 @@ function env=upper_envelope(Signal,t)
         %Get the spline of the upper envelope
         U=spline(t,Sig);
         env=mkpp(U.breaks,U.coefs);
+
+end
+
+function File_Create(File)
+
+if ~exist(File,'dir')
+    mkdir(File);
+end
 
 end
