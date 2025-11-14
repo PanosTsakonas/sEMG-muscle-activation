@@ -1,21 +1,20 @@
 clc;
 close all;
-clear all;
 
-%Set your own sampling frequency
+
 fsEMG=1000;
 fn=fsEMG/2;
 
-file=getenv('USERPROFILE')+"Set file path location of sEMG data";
+file=getenv('USERPROFILE')+\sEMG Data\";
 
 %Set 1 for zero initial condition in the ODE solver or to [] for non zero
 Zero=1;
 
 if isempty(Zero)==0
 
-    ff=file+"Plots\Activation_zero_init\";
+    ff=file+"Plots\Activation_zero_init_VMD\";
    
-    ffr=file+"Plots\Ratio_zero_init\";
+    ffr=file+"Plots\Ratio_zero_init_VMD\";
     
 else
     ff=file+"Plots\Activation_nonzero_init\";
@@ -26,23 +25,23 @@ end
 File_Create(ff);
 File_Create(ffr);
 
-ff_Sig=file+"Plots\Signal\";
+ff_Sig=file+"Plots\Signal_VMD\";
 File_Create(ff_Sig);
 
-ff_ODE=file+"Plots\Activation ODE zero init both\";
-ff_ODE_R=file+"Plots\Ratio of Activation ODE zero init both\";
-f_box=file+"Plots\BoxPlots\intra_subject\";
-f_inter=file+"Plots\BoxPlots\inter_subject\";
+ff_ODE=file+"Plots\Activation ODE zero init both VMD\";
+ff_ODE_R=file+"Plots\Ratio of Activation ODE zero init both VMD\";
+f_box="LME_Results\intra_subject_Wilcoxon_New\";
+f_inter=file+"Plots\BoxPlots\inter_subject VMD\";
 File_Create(f_box);
 File_Create(ff_ODE);
 File_Create(ff_ODE_R);
 File_Create(f_inter);
 
 %Set to a number to allow the HHT plot of sEMGs
-HHT_View=[];
+HHT_View=1;
 
 if isempty(HHT_View)==0
-    ff_HHT=file+"Plots\HHT\";
+    ff_HHT="C:\Users\panos\Desktop\Plots\HHT_Marginal\";
     File_Create(ff_HHT);
 end
 
@@ -93,21 +92,15 @@ for i=1:10
         FDS=double(D.data(:,2));
         FDP=double(D.data(:,3));
 
-        if isempty(HHT_View)~=1
+        %HHT
+        [hsEDC,f_EDC,tsEDC]=hht(emd(EDC),fsEMG);
+        [hsFDS,f_FDS,tsFDS]=hht(emd(FDS),fsEMG);
+        [hsFDP,f_FDP,tsFDP]=hht(emd(FDP),fsEMG);
 
-            figure()
-            hht(emd(EDC),fsEMG);
-            title("HHT of EDC signal");
-            saveas(gcf,ff_HHT+"EDC_HHT_Par_"+i+"_Cyl_"+j+".png");
-            figure()
-            hht(emd(FDS),fsEMG);
-            title("HHT of FDS signal");
-            saveas(gcf,ff_HHT+"FDS_HHT_Par_"+i+"_Cyl_"+j+".png");
-            figure()
-            hht(emd(FDP),fsEMG);
-            title("HHT of FDP signal");
-            saveas(gcf,ff_HHT+"FDP_HHT_Par_"+i+"_Cyl_"+j+".png");
-        end
+        [bEDC,aEDC,fEDC]=HHT_Filter_Cut_off(hsEDC,tsEDC,fn,f_EDC,HHT_View,ff_HHT,i,j,"EDC",EDC);
+        [bFDP,aFDP,fFDP]=HHT_Filter_Cut_off(hsFDS,tsFDS,fn,f_FDP,HHT_View,ff_HHT,i,j,"FDS",FDS);
+        [bFDS,aFDS,fFDS]=HHT_Filter_Cut_off(hsFDP,tsFDP,fn,f_FDS,HHT_View,ff_HHT,i,j,"FDP",FDP);
+    
     
         for m=1:length(FDP)
 
@@ -118,12 +111,7 @@ for i=1:10
             end
         end
 
-        %Band pass [10-450], rectify and normalise
-
-        [bEDC,aEDC]=Filter_Cut_Off(EDC,fn);
-        [bFDP,aFDP]=Filter_Cut_Off(FDP,fn);
-        [bFDS,aFDS]=Filter_Cut_Off(FDS,fn);
-
+        
         EDCf=abs(filtfilt(bEDC,aEDC,EDC))./MVC(i,1);
         FDPf=abs(filtfilt(bFDP,aFDP,FDP))./MVC(i,3);
         FDSf=abs(filtfilt(bFDS,aFDS,FDS))./MVC(i,2);
@@ -280,32 +268,165 @@ end
 
 %%
 %Intra Subject boxplots
-for i=1:10
-[M_EDC,sd_EDC,SM_EDC,sd_SEDC]=intra_Boxplot(edc,sedc,i,"EDC",f_box);
-[M_FDS,sd_FDS,SM_FDS,sd_SFDS]=intra_Boxplot(fds,sfds,i,"FDS",f_box);
-[M_FDP,sd_FDP,SM_FDP,sd_SFDP]=intra_Boxplot(fdp,sfdp,i,"FDP",f_box);
+EDC_MED = cell(10,1); 
+FDS_MED = cell(10,1); 
+FDP_MED = cell(10,1); 
 
-medc{i}=M_EDC;
-sdedc{i}=sd_EDC;
-sdsedc{i}=sd_SEDC;
-smedc{i}=SM_EDC;
-mfds{i}=M_FDS;
-sdfds{i}=sd_FDS;
-sdsfds{i}=sd_SFDS;
-smfds{i}=SM_FDS;
-mfdp{i}=M_FDP;
-sdfdp{i}=sd_FDP;
-sdsfdp{i}=sd_SFDP;
-smfdp{i}=SM_FDP;
+for i=1:10
+[M_EDC,sd_EDC,SM_EDC,sd_SEDC,MED_EDC]=intra_Boxplot(edc,sedc,i,"EDC",f_box);
+[M_FDS,sd_FDS,SM_FDS,sd_SFDS,MED_FDS]=intra_Boxplot(fds,sfds,i,"FDS",f_box);
+[M_FDP,sd_FDP,SM_FDP,sd_SFDP,MED_FDP]=intra_Boxplot(fdp,sfdp,i,"FDP",f_box);
+
+
+% store participant-level of all_diffs
+    EDC_MED{i} = MED_EDC;  
+    FDS_MED{i} = MED_FDS;  
+    FDP_MED{i} = MED_FDP;  
 end
 
+%% Format each cell as "median (IQR)", show "NA" if missing
+fmtCell = @(m,i) ...
+    ( ...
+        (isnan(m) || isnan(i)) * 0 + 0 ... % dummy to satisfy syntax
+    ); % placeholder (ignored below)
 
-inter_Boxplot(medc,smedc,sdedc,sdsedc,"EDC",f_inter);
-inter_Boxplot(mfds,smfds,sdfds,sdsfds,"FDS",f_inter);
-inter_Boxplot(mfdp,smfdp,sdfdp,sdsfdp,"FDP",f_inter);
+% Replace with a normal function handle that uses if/else logic:
+fmtCell = @(m,i) ...
+    ( ...
+        (isnan(m) || isnan(i)) ...
+        && "NA" ...
+        || string(sprintf('%.3f (%.3f)', m, i)) ...
+    );
+
+% 10x1
+Participant = (1:10)';
+
+% helper to get per-trial scalar differences and pad to 5 with NaN
+perTrial = @(M) [ median(M, 1, 'omitnan'), nan(1, max(0, 5 - size(M,2))) ];
+
+EDC_T = nan(10,5);
+FDS_T = nan(10,5);
+FDP_T = nan(10,5);
+
+for ii = 1:10
+    % Each cell may be n x 4 (subject 5) or n x 5 (others). Collapse columns (trials).
+    if ~isempty(EDC_MED{ii}), EDC_T(ii,:) = perTrial(EDC_MED{ii}); end
+    if ~isempty(FDS_MED{ii}), FDS_T(ii,:) = perTrial(FDS_MED{ii}); end
+    if ~isempty(FDP_MED{ii}), FDP_T(ii,:) = perTrial(FDP_MED{ii}); end
+end
+
+% Round to 3 decimal places
+EDC_T = round(EDC_T, 3);
+FDS_T = round(FDS_T, 3);
+FDP_T = round(FDP_T, 3);
+
+% Build table with columns: EDC_T1..T5, FDS_T1..T5, FDP_T1..T5
+varNames = [{'Participant'}, ...
+            arrayfun(@(k) sprintf('EDC_T%d',k), 1:5, 'UniformOutput', false), ...
+            arrayfun(@(k) sprintf('FDS_T%d',k), 1:5, 'UniformOutput', false), ...
+            arrayfun(@(k) sprintf('FDP_T%d',k), 1:5, 'UniformOutput', false)];
+
+T = table(Participant, ...
+    EDC_T(:,1), EDC_T(:,2), EDC_T(:,3), EDC_T(:,4), EDC_T(:,5), ...
+    FDS_T(:,1), FDS_T(:,2), FDS_T(:,3), FDS_T(:,4), FDS_T(:,5), ...
+    FDP_T(:,1), FDP_T(:,2), FDP_T(:,3), FDP_T(:,4), FDP_T(:,5), ...
+    'VariableNames', varNames);
+
+% === Export for the appendix ===
+out_csv  = fullfile(f_box, 'AppendixA_median_IQR_differences_Marginal.csv');
+writetable(T, out_csv);
 
 
+%% Create activations_export excel
 
+outfile = "activations_export_marginal.xlsx";
+
+nParticipants = 10;
+nTrialsPerP   = 5;
+
+for p = 1:nParticipants
+    sheetName = sprintf('P%d', p);
+    C = {};          % cell buffer for this sheet
+    row = 1;
+
+    for t = 1:nTrialsPerP
+        % Linear index into your cell arrays
+        c = (p-1)*nTrialsPerP + t;
+        if c > numel(edc)
+            continue;   % safety
+        end
+
+        % Extract data for this participant/trial
+        edc_t  = edc{c};
+        fds_t  = fds{c};
+        fdp_t  = fdp{c};
+        sedc_t = sedc{c};
+        sfds_t = sfds{c};
+        sfdp_t = sfdp{c};
+
+        % Make sure they're column vectors
+        if ~isempty(edc_t),  edc_t  = edc_t(:);  end
+        if ~isempty(fds_t),  fds_t  = fds_t(:);  end
+        if ~isempty(fdp_t),  fdp_t  = fdp_t(:);  end
+        if ~isempty(sedc_t), sedc_t = sedc_t(:); end
+        if ~isempty(sfds_t), sfds_t = sfds_t(:); end
+        if ~isempty(sfdp_t), sfdp_t = sfdp_t(:); end
+
+        % If this trial has absolutely no data, skip (e.g. P5–T5)
+        if isempty(edc_t)  && isempty(fds_t)  && isempty(fdp_t) && ...
+           isempty(sedc_t) && isempty(sfds_t) && isempty(sfdp_t)
+            fprintf('Skipping Participant %d Trial %d (no data)\n', p, t);
+            continue;
+        end
+
+        % Determine length L of this trial (assume all series same length;
+        % to be safe, use min of non-empty lengths)
+        lengths = [numel(edc_t), numel(sedc_t), ...
+                   numel(fds_t), numel(sfds_t), ...
+                   numel(fdp_t), numel(sfdp_t)];
+        L = min(lengths(lengths > 0));
+        if isempty(L) || L == 0
+            fprintf('Skipping Participant %d Trial %d (degenerate lengths)\n', p, t);
+            continue;
+        end
+
+        % ---------- Block header: "Participant X - Trial Y" ----------
+        C{row,1} = sprintf('Participant %d - Trial %d', p, t);
+        row = row + 1;
+
+        % ---------- Column headers ----------
+        C(row,1) = {'Sample'};
+        C(row,2) = {'EDC_new'};
+        C(row,3) = {'EDC_old'};
+        C(row,4) = {'FDS_new'};
+        C(row,5) = {'FDS_old'};
+        C(row,6) = {'FDP_new'};
+        C(row,7) = {'FDP_old'};
+        row = row + 1;
+
+        % ---------- Data rows (no NaN padding, like your original) ----------
+        for i = 1:L
+            C{row,1} = i;            % Sample index
+            C{row,2} = edc_t(i);     % new pipeline
+            C{row,3} = sedc_t(i);    % old pipeline
+            C{row,4} = fds_t(i);
+            C{row,5} = sfds_t(i);
+            C{row,6} = fdp_t(i);
+            C{row,7} = sfdp_t(i);
+            row = row + 1;
+        end
+
+        % ---------- Blank row between trial blocks ----------
+        C(row,1) = {[]};
+        row = row + 1;
+    end
+
+    % Only write sheet if it has any content
+    if ~isempty(C)
+        writecell(C, outfile, 'Sheet', sheetName);
+        fprintf('Wrote sheet %s with %d rows.\n', sheetName, row-1);
+    end
+end
 
 function env=upper_envelope(Signal,t)
 
@@ -354,19 +475,8 @@ saveas(gcf,File+Tag+" Muscle_activation_ODE_Ratio_Par_"+i+"_Cyl_"+j+".png");
 
 end
 
-function [b,a]=Filter_Cut_Off(sig,fn)
 
-[~,~,~,ifs]=hht(emd(sig),2*fn);
-
-up=max(max(abs(ifs(:,1:4))));
-
-
-[b,a]=butter(4,[10 up]./fn,'bandpass');
-
-
-end
-
-function [M,sdM,SM,sdSM]=intra_Boxplot(act,sact,i,Tag,File)
+function [M,sdM,SM,sdSM,all_diffs]=intra_Boxplot(act,sact,i,Tag,File)
 
 if i==1
     J=1:5;
@@ -453,178 +563,77 @@ else
 end
 
 
-% figure('Position',[100, 100, 900,500])
-% 
-% if i~=5
-%     data = {[a,sa],[b,sb],[c,sc],[d,sd],[e,se]};
-%     SS={"Trial 1","Trial 2","Trial 3","Trial 4","Trial 5"};
-%     colors=["r",'k','b','m', 'g'];
-% else
-%     data = {[a,sa],[b,sb],[c,sc],[d,sd]};
-%     SS={"Trial 1","Trial 2","Trial 3","Trial 4"};
-%     colors = ["r", "k", "b", "m"]; 
-% end
-% 
-% boxplotGroup(data, 'interGroupSpace', 1,'Colors',colors, 'primarylabels', SS,'secondarylabels',{'New pipeline','Existing pipeline'});
-% ylabel("Muscle activation (%)")
-% title("Boxplots of "+Tag+" muscle activation of participant "+i);
-% for t = 1:length(data)
-%     % For each trial, compare the two groups
-%     [p_trial, ~] = signrank(data{t}(:,1), data{t}(:,2));
-%     if p_trial>1e-3
-%         pval_str = sprintf('Trial %d p = %.4f', t, p_trial);
-%     else
-%         pval_str = sprintf('Trial %d p < %.3f', t, 0.001);
-%     end
-%     % Place each text box lower down
-%     annotation('textbox', [0.15, 0.8-0.05*t, 0.3, 0.05], 'String', pval_str, ...
-%         'FitBoxToText', 'on', ...
-%         'EdgeColor', 'none', 'FontSize', 9, 'Color', colors(t));
-% end
+figure('Position',[100, 100, 900,500])
+
+if i~=5
+    data = {[a,sa],[b,sb],[c,sc],[d,sd],[e,se]};
+    SS={"Trial 1","Trial 2","Trial 3","Trial 4","Trial 5"};
+    colors=["r",'k','b','m', 'g'];
+else
+    data = {[a,sa],[b,sb],[c,sc],[d,sd]};
+    SS={"Trial 1","Trial 2","Trial 3","Trial 4"};
+    colors = ["r", "k", "b", "m"]; 
+end
+all_diffs = []; % before loop
+boxplotGroup(data, 'interGroupSpace', 1,'Colors',colors, 'primarylabels', SS,'secondarylabels',{'New pipeline','Existing pipeline'});
+ylabel("Muscle activation (%)")
+title("Boxplots of "+Tag+" muscle activation of participant "+i);
+for t = 1:length(data)
+    % For each trial, compare the two groups
+    [p_trial, ~] = signrank(data{t}(:,1), data{t}(:,2));
+    diffs=data{t}(:,1) - data{t}(:,2);
+    all_diffs = [all_diffs, diffs];
+    
+    if p_trial>1e-3
+        pval_str = sprintf('Trial %d p = %.4f', t, p_trial);
+    else
+        pval_str = sprintf('Trial %d p < %.3f', t, 0.001);
+    end
+    % Place each text box lower down
+    annotation('textbox', [0.15, 0.8-0.05*t, 0.3, 0.05], 'String', pval_str, ...
+        'FitBoxToText', 'on', ...
+        'EdgeColor', 'none', 'FontSize', 9, 'Color', colors(t));
+end
+
 % s=input("You want to save: ","s");
 % if s=='y' || s=='Y'
 % exportgraphics(gcf,File+"subj_"+i+"_"+Tag+".png")
-% end
+%end
 end
 
 
-function inter_Boxplot(M,SM,sdM,sdSM,Tag,File)
-F_Fit=File+"fit_"+Tag+"\";
-File_Create(F_Fit);
-F_Box=File+Tag+" boxplot\";
-File_Create(F_Box);
-% for i=1:10
-% figure()
-% 
-% errorbar(M{i},SM{i},sdM{i},sdM{i},sdSM{i},sdSM{i},'o');
-% ylabel("Muscle activation existing pipeline (%)");
-% xlabel("Muscle activation new pipeline (%)");
-% hold on;
-% P=polyfitZero(M{i},SM{i},1);
-% x=[min([M{i}-sdM{i},SM{i}-sdSM{i}]),max([M{i}+sdM{i},SM{i}+sdSM{i}])];
-% xn=linspace(x(1),x(2),100);
-% plot(xn,polyval(P,xn));
-% hold off;
-% legend("Data","Y= "+P(1)+" x",'Location','best');
-% rs=R2(SM{i},polyval(P,M{i}));
-% rms=rmse(SM{i},polyval(P,M{i}));
-% title("Errorbars and linear fit of "+Tag+" muscle with R^2: "+rs+" and RMSE: "+rms);
-% exportgraphics(gcf,F_Fit+"P_"+i+".png");
-% end
+function [b,a,f_cut]=HHT_Filter_Cut_off(hs,ts,fn,fs,HHT_View,ff_HHT,i,j,flag,sig)
 
-M{5}=[M{5},NaN];
-SM{5}=[SM{5},NaN];
+%% 1) Convert to power spectrum (Hilbert spectrum)
+P = abs(hs).^2;                % power vs time & frequency
 
-data={[M{1}',SM{1}'],[M{2}',SM{2}'],[M{3}',SM{3}'],...
-[M{4}',SM{4}'],[M{5}',SM{5}'],[M{6}',SM{6}'],...
-[M{7}',SM{7}'],[M{8}',SM{8}'],[M{9}',SM{9}'],[M{10}',SM{10}']};
+%% 2) Marginal spectrum (integrate power over time)
+% use trapezoidal integration over time
+M = full( trapz(ts, P, 2) );           % column vector, same length as fs
 
-SS={"P1","P2","P3","P4","P5","P6","P7","P8","P9","P10"};
+%% 3) Cumulative energy vs frequency
+cumE      = cumsum(M);         
+cumE_norm = cumE ./ cumE(end); % 0 → 1
 
-colors = [
-    0.1216, 0.4667, 0.7059;   % blue
-    1.0000, 0.4980, 0.0549;   % orange
-    0.1725, 0.6275, 0.1725;   % green
-    0.8392, 0.1529, 0.1569;   % red
-    0.5804, 0.4039, 0.7412;   % purple
-    0.5490, 0.3373, 0.2941;   % brown
-    0.8902, 0.4667, 0.7608;   % pink
-    0.4980, 0.4980, 0.4980;   % gray
-    0.7373, 0.7412, 0.1333;   % olive
-    0.0902, 0.7451, 0.8118    % cyan
-];
+%% 4) Choose target fraction of total power (e.g. 95%)
+eta = 0.95;                    % keep 95% of power
+idx = find(cumE_norm >= eta, 1, 'first');
+f_cut = fs(idx);
 
-figure('Position',[100, 100, 900,500])
-boxplotGroup(data, 'interGroupSpace', 1,'Colors',colors, 'primarylabels', SS,'secondarylabels',{'New pipeline','Existing pipeline'});
-ylabel("mean muscle activation (%)")
-title("Boxplots of "+Tag+" muscle activation across participants");
-p_wilcoxon = NaN(10,1);
-HigherMethod= "";
-for p = 1:length(data)
-    % Extract data for participant p
-    new_pipeline = data{p}(:,1);
-    existing_pipeline = data{p}(:,2);
+[b,a]=butter(4,[10 f_cut]./fn,'bandpass');
 
-    % Wilcoxon signed-rank test
-    p_wilcoxon(p) = signrank(new_pipeline, existing_pipeline);
+if isempty(HHT_View)~=1
 
-    if p_wilcoxon(p) < 0.05
-        
-        if median(new_pipeline, 'omitnan') > median(existing_pipeline, 'omitnan')
-            HigherMethod(p) = "New pipeline";
-        else
-            HigherMethod(p) = "Existing pipeline";
-        end
-    else
-        
-        HigherMethod(p) = "-";
-    end
-
-
-
-    % Format p-value string
-    if p_wilcoxon(p) < 0.001
-        pval_str = 'p < 0.001';
-    else
-        pval_str = sprintf('p = %.3f', p_wilcoxon(p));
-    end
-
-    % Determine x and y position for annotation
-    x_pos = (p-1)*2 + 1.5; % Centered between the two boxes for participant p
-    y_pos = max([new_pipeline; existing_pipeline]) * 1.05; % Slightly above the top whisker
-
-    % Add annotation (subtle style)
-    text(x_pos, y_pos, pval_str, ...
-        'HorizontalAlignment', 'center', ...
-        'VerticalAlignment', 'bottom', ...
-        'FontSize', 9, ...
-        'Color', colors(p,:), ...
-        'FontAngle', 'italic', ...
-        'Interpreter', 'none');
-end
-%exportgraphics(gcf,F_Box+"Boxplot_"+Tag+".png");
-T_pvals = table((1:10)', p_wilcoxon,HigherMethod', 'VariableNames', {'Participant', 'Wilcoxon_p_value','Higher Activation'});
-writetable(T_pvals, F_Box+"Boxplot_"+Tag+"Wilcoxon_pvalues_per_subject.csv");
-% Example dimensions (replace with your actual numbers)
-N_subjects = 10;
-N_trials = 5;
-N_methods = 2; % e.g., New and Existing
-
-% Create vectors for each variable
-Subject = repelem((1:N_subjects)', N_trials * N_methods);
-Trial = repmat(repelem((1:N_trials)', N_methods), N_subjects, 1);
-Method = repmat({'New pipeline'; 'Existing pipeline'}, N_subjects * N_trials, 1);
-Activation=[];
-for i=1:10
-    a=M{i};
-    b=SM{i};
-
-    for j=1:5
-
-        if i==5 && j==5
-            Activation=[Activation;NaN;NaN];
-        else
-        Activation=[Activation;a(j);b(j)];
-        end
-    end
-end
-
-% Create table
-activationTable = table(Subject, Trial, Method, Activation);
-
-lme = fitlme(activationTable, 'Activation ~ Method + Trial + (1|Subject)');
-% Export summary tables
-% Fixed effects:
-fixedEffectsTable = dataset2table(lme.Coefficients);
-writetable((fixedEffectsTable), F_Box+"Boxplot_"+Tag+"lme_fixed_effects.csv");
-
-% % Random effects (inter-subject variability):
- randomEffectsTable = randomEffects(lme);
- writetable((randomEffectsTable), F_Box+"Boxplot_"+Tag+"lme_random_effects.csv");
-
-% ANOVA table for model:
-anovaTable = dataset2table(anova(lme));
-writetable((anovaTable), F_Box+"Boxplot_"+Tag+"lme_anova.csv");
+figure()
+hht(emd(sig),2*fn)
+hold on;
+yline(f_cut,'--','Upper Cut off frequency');
+yline(10,'--','Lower Cut off frequency');
+hold off;
+saveas(gcf,ff_HHT+flag+"_HHT_Par_"+i+"_Cyl_"+j+".png");
 
 
 end
+
+end
+
