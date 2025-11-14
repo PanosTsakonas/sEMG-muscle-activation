@@ -12,9 +12,9 @@ Zero=1;
 
 if isempty(Zero)==0
 
-    ff=file+"Plots\Activation_zero_init_VMD\";
+    ff=file+"Plots\Activation_zero_init\";
    
-    ffr=file+"Plots\Ratio_zero_init_VMD\";
+    ffr=file+"Plots\Ratio_zero_init\";
     
 else
     ff=file+"Plots\Activation_nonzero_init\";
@@ -25,7 +25,7 @@ end
 File_Create(ff);
 File_Create(ffr);
 
-ff_Sig=file+"Plots\Signal_VMD\";
+ff_Sig=file+"Plots\Signal\";
 File_Create(ff_Sig);
 
 ff_ODE=file+"Plots\Activation ODE zero init both VMD\";
@@ -636,4 +636,5 @@ saveas(gcf,ff_HHT+flag+"_HHT_Par_"+i+"_Cyl_"+j+".png");
 end
 
 end
+
 
