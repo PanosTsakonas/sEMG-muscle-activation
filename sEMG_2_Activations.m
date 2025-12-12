@@ -5,7 +5,7 @@ close all;
 fsEMG=1000;
 fn=fsEMG/2;
 
-file=getenv('USERPROFILE')+"\OneDrive - University of Warwick\PhD\Hand Trials\Results\Cylindrical Grasp\sEMG Data\";
+file=*************Set the path to the sEMG Data\*********************";
 
 %Set 1 for zero initial condition in the ODE solver or to [] for non zero
 Zero=1;
@@ -636,4 +636,5 @@ saveas(gcf,ff_HHT+flag+"_HHT_Par_"+i+"_Cyl_"+j+".png");
 end
 
 end
+
 
