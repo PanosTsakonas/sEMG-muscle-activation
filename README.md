@@ -1,5 +1,11 @@
 # sEMG Muscle Activation Pipeline
-MATLAB scripts for processing surface electromyography (sEMG) data from cylindrical grasp trials (10 participants, 5 trials each) for muscle activation analysis supporting the paper at (https://doi.org/10.1016/j.bea.2025.100204).​
+MATLAB scripts for processing surface electromyography (sEMG) data from cylindrical grasp trials (10 participants, 5 trials each) for muscle activation analysis supporting the paper at (P. Tsakonas, N.D. Evans, J. Hardwicke, M.J. Chappell,
+A novel pipeline for converting surface electromyography signals into muscle activations,
+Biomedical Engineering Advances,
+2025,
+100204,
+ISSN 2667-0992,
+https://doi.org/10.1016/j.bea.2025.100204.)
 
 # Pipeline Overview
 The workflow compares "Old" (windowed envelope) vs "New" (Hilbert-Huang Transform + ODE) pipelines for EDC, FDS, FDP muscles, then runs simplified linear mixed-effects (LME) models per muscle: log(activation) ~ pipeline + trial + (1|participant).​
