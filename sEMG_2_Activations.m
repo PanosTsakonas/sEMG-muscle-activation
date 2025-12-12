@@ -5,16 +5,16 @@ close all;
 fsEMG=1000;
 fn=fsEMG/2;
 
-file=getenv('USERPROFILE')+\sEMG Data\";
+file=getenv('USERPROFILE')+"\OneDrive - University of Warwick\PhD\Hand Trials\Results\Cylindrical Grasp\sEMG Data\";
 
 %Set 1 for zero initial condition in the ODE solver or to [] for non zero
 Zero=1;
 
 if isempty(Zero)==0
 
-    ff=file+"Plots\Activation_zero_init\";
+    ff=file+"Plots\Activation_zero_init_VMD\";
    
-    ffr=file+"Plots\Ratio_zero_init\";
+    ffr=file+"Plots\Ratio_zero_init_VMD\";
     
 else
     ff=file+"Plots\Activation_nonzero_init\";
@@ -25,7 +25,7 @@ end
 File_Create(ff);
 File_Create(ffr);
 
-ff_Sig=file+"Plots\Signal\";
+ff_Sig=file+"Plots\Signal_VMD\";
 File_Create(ff_Sig);
 
 ff_ODE=file+"Plots\Activation ODE zero init both VMD\";
@@ -636,5 +636,4 @@ saveas(gcf,ff_HHT+flag+"_HHT_Par_"+i+"_Cyl_"+j+".png");
 end
 
 end
-
 
