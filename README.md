@@ -17,7 +17,7 @@ activation.m	ODE model from Blana et al. (2007): da/dt = (u/Tact + (1-u)/Tdeact)
 LME_muscle_activations_long_file_creation.m	Converts Excel to LME-ready long CSV (handles skips like P5-T5)	activations_long_raw_marginal.csv
 run_lme_activation_simple.m	Runs per-muscle LME (REML), winsorizes log(activation), bins time	LME CSVs (fixed effects, ratios, residuals plots), p-value adjustments
 Usage Instructions
-Place sEMG Excel files (sEMG_P1.xlsx to sEMG_P10.xlsx) in the data path (updates to your OneDrive/University of Warwick/Hand Trials/Results/Cylindrical Grasp/sEMG Data).​
+Place sEMG Excel files in the data path.​
 
 Run sEMG_2_Activations.m first to generate activations_export_marginal.xlsx and plots.
 
